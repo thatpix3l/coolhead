@@ -1,0 +1,7 @@
+{
+    "go.goroot": "/var/home/jonathan/.local/share/distrobox/homes/dev/.local/share/mise/installs/go/1.24.4",
+    "go.alternateTools": {
+        "go": "/var/home/jonathan/.local/share/distrobox/homes/dev/.local/share/mise/shims/go",
+        "gopls": "/var/home/jonathan/.local/share/distrobox/homes/dev/.local/share/mise/shims/gopls"
+    },
+}
