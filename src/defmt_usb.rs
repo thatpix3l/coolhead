@@ -1,6 +1,8 @@
-use core::{cell::{UnsafeCell}, sync::atomic::{AtomicBool, Ordering}};
-
 use crate::serial_usb::signal_bytes;
+use core::{
+    cell::UnsafeCell,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 #[defmt::global_logger]
 struct Logger;
@@ -13,10 +15,10 @@ struct UsbEncoder {
     /// Is `true` when `acquire` has been called and we have exclusive access to
     /// the rest of this structure.
     taken: AtomicBool,
-     /// We need to remember this to exit a critical section
-    cs_restore: UnsafeCell<critical_section::RestoreState>,       
+    /// We need to remember this to exit a critical section
+    cs_restore: UnsafeCell<critical_section::RestoreState>,
     /// A `defmt::Encoder` for encoding frames
-    encoder: UnsafeCell<defmt::Encoder>
+    encoder: UnsafeCell<defmt::Encoder>,
 }
 
 unsafe impl Sync for UsbEncoder {}
@@ -29,7 +31,7 @@ impl UsbEncoder {
             encoder: UnsafeCell::new(defmt::Encoder::new()),
         }
     }
-    
+
     /// Acquire the defmt encoder.
     fn acquire(&self) {
         // safety: Must be paired with corresponding call to release(), see below
@@ -48,7 +50,7 @@ impl UsbEncoder {
         // section.
         unsafe {
             self.cs_restore.get().write(restore);
-            let encoder= &mut *self.encoder.get();
+            let encoder = &mut *self.encoder.get();
             encoder.start_frame(signal_bytes);
         }
     }
@@ -101,7 +103,6 @@ impl UsbEncoder {
             critical_section::release(restore);
         }
     }
-
 }
 
 unsafe impl defmt::Logger for Logger {

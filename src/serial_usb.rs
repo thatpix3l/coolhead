@@ -1,32 +1,21 @@
-
 use defmt::{info, panic, unwrap};
 use embassy_executor::Spawner;
 use embassy_rp::{
     bind_interrupts,
     peripherals::USB,
-    usb::{
-        Driver,
-        Instance,
-        InterruptHandler
-    }
+    usb::{Driver, Instance, InterruptHandler},
 };
-use embassy_sync::{
-    blocking_mutex::raw::CriticalSectionRawMutex,
-    signal::Signal
-};
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, signal::Signal};
 use embassy_usb::{
-    class::cdc_acm::{
-        CdcAcmClass,
-        State
-    },
+    UsbDevice,
+    class::cdc_acm::{CdcAcmClass, State},
     driver::EndpointError,
-    UsbDevice
 };
 use static_cell::StaticCell;
 
 pub struct Packet {
     data: [u8; 64],
-    len: usize
+    len: usize,
 }
 
 impl Packet {
@@ -58,7 +47,6 @@ pub fn signal_bytes(b: &[u8]) {
 
 #[embassy_executor::task]
 pub async fn new_serial(spawner: Spawner, usb_peripheral: embassy_rp::Peri<'static, USB>) {
-
     // Create the driver, from the HAL.
     let driver = Driver::new(usb_peripheral, Irqs);
 
@@ -132,7 +120,9 @@ impl From<EndpointError> for Disconnected {
     }
 }
 
-async fn start_packet_writer<'d, T: Instance + 'd>(class: &mut CdcAcmClass<'d, Driver<'d, T>>) -> Result<(), Disconnected> {
+async fn start_packet_writer<'d, T: Instance + 'd>(
+    class: &mut CdcAcmClass<'d, Driver<'d, T>>,
+) -> Result<(), Disconnected> {
     loop {
         let packet = PACKET.wait().await;
         class.write_packet(packet.get_data()).await?
